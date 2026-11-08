@@ -45,21 +45,27 @@ node --experimental-strip-types scripts/check-chapter.ts 19 20  # 指定した�
 
 ハッシュルーティング（`#/33/ipc` の形式）を使っているため、サーバー側のリライト設定は不要です。`dist/` をそのまま配置すれば動きます。
 
-### GitHub Pages（プロジェクトサイト `https://<user>.github.io/<repo>/`）
+### GitHub Pages
+
+`main` ブランチへ push すると `.github/workflows/deploy.yml` がビルドして公開します。手動で実行する場合は、Actions の「Deploy to GitHub Pages」から `Run workflow` を選びます。
+
+- 初回だけ、リポジトリの Settings → Pages → Source で「GitHub Actions」を選んでください。
+- 公開 URL はプロジェクトサイトなら `https://<user>.github.io/<repo>/` です。`BASE_PATH` は `actions/configure-pages` の出力から自動で設定されるため、指定は不要です。
+- ユーザーサイト（`https://<user>.github.io/`）でも同じワークフローが使えます。
+
+手動でビルドする場合:
 
 ```bash
 BASE_PATH=/<repo>/ npm run build
 ```
 
-`dist/` の中身を `gh-pages` ブランチ、または Pages の公開ディレクトリに配置します。ユーザーサイト（`https://<user>.github.io/`）やカスタムドメインでルート配信する場合は `BASE_PATH` を付けずにビルドします。
+`dist/` の中身を `gh-pages` ブランチ、または Pages の公開ディレクトリに配置します。ユーザーサイトやカスタムドメインでルート配信する場合は `BASE_PATH` を付けずにビルドします。
 
 ### Cloudflare Pages
 
 - ビルドコマンド: `npm run build`
 - 出力ディレクトリ: `dist`
 - リライト設定: 不要
-
-このリポジトリには公開を自動実行する CI 設定は含まれていません。
 
 ## 構成
 
