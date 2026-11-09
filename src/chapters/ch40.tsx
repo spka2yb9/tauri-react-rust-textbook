@@ -454,9 +454,12 @@ expect(getCurrentWebviewWindow().label).toBe('main');
             <code>tauri-driver</code> は、各プラットフォームのネイティブな WebDriver サーバーを利用します。<Ref n={9} /> インストールは <code>cargo install tauri-driver --locked</code> です。<Ref n={9} /> ネイティブのドライバは OS ごとに用意します。<Ref n={9} />
           </p>
           <ul>
-            <li>Linux：<code>WebKitWebDriver</code>。<code>which WebKitWebDriver</code> で確認し、無ければ Debian 系では <code>webkit2gtk-driver</code> のような別パッケージを入れる。</li>
+            <li>Linux：<code>WebKitWebDriver</code>。<code>which WebKitWebDriver</code> で確認し、無ければ Debian 系では <code>webkit2gtk-driver</code> のような別パッケージを入れる（Ubuntu 24.04 ではこのパッケージで <code>/usr/bin/WebKitWebDriver</code> が入ることを確かめました）。</li>
             <li>Windows：Edge のバージョンに合った Microsoft Edge Driver（<code>msedgedriver.exe</code>）。PATH に置くか、<code>--native-driver</code> オプションで場所を指定する。</li>
           </ul>
+          <p>
+            Linux で <code>tauri-driver</code>（2.1.0）を引数なしで起動すると、ポート 4444 で待ち受け、<code>WebKitWebDriver</code> を 4445 で子プロセスとして起動しました。<code>--port</code> と <code>--native-port</code> で変えられます（<code>tauri-driver --help</code> の表示）。
+          </p>
           <p>
             そして最も重要な制約です。公式は「デスクトップでは Windows と Linux だけがサポートされる。macOS には WKWebView のドライバツールが存在しないため」と明記しています。<Ref n={6} /> つまり、本書の開発 PC である macOS では、公式の <code>tauri-driver</code> は動きません。
           </p>
@@ -478,14 +481,14 @@ expect(getCurrentWebviewWindow().label).toBe('main');
                 <tr>
                   <td>Windows</td>
                   <td>Microsoft Edge WebDriver（WebView2 と通信）</td>
-                  <td>official、crabnebula、embedded</td>
+                  <td>external（旧名 official）、crabnebula、embedded</td>
                   <td>自動管理</td>
                 </tr>
                 <tr>
                   <td>Linux</td>
                   <td>WebKitWebDriver（WebKitGTK）</td>
-                  <td>official、crabnebula、embedded</td>
-                  <td>手動インストール（official の場合 <code>webkit2gtk-driver</code>）</td>
+                  <td>external（旧名 official）、crabnebula、embedded</td>
+                  <td>手動インストール（external の場合 <code>webkit2gtk-driver</code>。embedded は不要）</td>
                 </tr>
                 <tr>
                   <td>macOS</td>
@@ -497,19 +500,35 @@ expect(getCurrentWebviewWindow().label).toBe('main');
             </table>
           </div>
           <p>
-            WebdriverIO の資料によれば、macOS の <code>embedded</code> provider は <code>tauri-plugin-wdio-webdriver</code> というプラグインをアプリに組み込む方式で、サービスが自動検出します。CrabNebula の方式は「公式 tauri-driver のフォークに macOS 対応を加えたもの」で、<code>@crabnebula/tauri-driver</code>、<code>tauri-plugin-automation</code>、環境変数 <code>CN_API_KEY</code> が必要です。<Ref n={11} />
+            WebdriverIO の資料によれば、macOS の <code>embedded</code> provider は <code>tauri-plugin-wdio-webdriver</code> というプラグインをアプリに組み込む方式で、サービスが自動検出します。<code>driverProvider</code> を書かないときの既定は embedded で、Linux でもそうなることをログで確かめました（Windows と Linux で <code>tauri-driver</code> を使うときは <code>'external'</code> を明示します）。CrabNebula の方式は「公式 tauri-driver のフォークに macOS 対応を加えたもの」で、<code>@crabnebula/tauri-driver</code>、<code>tauri-plugin-automation</code>、環境変数 <code>CN_API_KEY</code> が必要です。<Ref n={11} />
           </p>
           <Code
             lang="toml"
-            title="src-tauri/Cargo.toml（embedded provider 用のプラグインを足す）"
+            title="src-tauri/Cargo.toml（テスト用のプラグインはデバッグビルドだけに足す）"
             code={`
-[dependencies]
+[target.'cfg(debug_assertions)'.dependencies]
+tauri-plugin-wdio = "1"
 tauri-plugin-wdio-webdriver = "1"
 `}
           />
           <Code
+            lang="rust"
+            title="src-tauri/src/lib.rs（run 関数の先頭）"
+            code={`
+let builder = tauri::Builder::default();
+// E2E 用のプラグインはデバッグビルドだけに入れる
+#[cfg(debug_assertions)]
+let builder = builder
+    .plugin(tauri_plugin_wdio::init())
+    .plugin(tauri_plugin_wdio_webdriver::init());
+builder
+    .plugin(tauri_plugin_fs::init())
+    // 以下は既存のプラグインと setup のまま
+`}
+          />
+          <Code
             lang="ts"
-            title="wdio.conf.ts（@wdio/tauri-service の設定の骨子）"
+            title="wdio.conf.ts（@wdio/tauri-service の設定。Linux で動いたもの）"
             code={`
 export const config = {
   services: [
@@ -517,31 +536,115 @@ export const config = {
       'tauri',
       {
         appBinaryPath: './src-tauri/target/debug/tsumugi',
-        driverProvider: 'embedded',
+        driverProvider: 'embedded', // tauri-driver を使うなら 'external'
       },
     ],
   ],
+  capabilities: [{ browserName: 'tauri' }],
   specs: ['./e2e/**/*.e2e.ts'],
   framework: 'mocha',
-};
+  reporters: ['spec'],
+}
 `}
           />
           <p>
-            サービスは <code>npm install --save-dev @wdio/tauri-service</code> で入れ、プラグインは <code>lib.rs</code> で <code>.plugin(tauri_plugin_wdio_webdriver::init())</code> と登録します。<Ref n={10} /> テスト側では <code>browser.tauri.execute()</code> で WebView 内のコードを実行でき、コマンド（IPC）のモックや、Rust とフロントエンドのログ収集も提供されます。<Ref n={6} />
+            サービスと WebdriverIO は <code>npm install --save-dev @wdio/cli@9 @wdio/local-runner@9 @wdio/mocha-framework@9 @wdio/spec-reporter@9 @wdio/tauri-service</code> で入れます。<code>@wdio/tauri-service</code> 1.5.1 の peer 依存は <code>webdriverio ^9.0.0</code> で、版を付けずに入れると <code>@wdio/cli</code> 10.1.0 が入り、サービスの起動処理（<code>before()</code>）が <code>Cannot read properties of undefined (reading 'bind')</code> で失敗しました。WebdriverIO 10 は <code>executeAsync</code> を無くしたためで、サービスがまだそれを参照していると読めます。<Ref n={13} /> アプリ側は、Rust の変更（上の2つ）に加えて、<code>tauri.conf.json</code> の <code>app</code> に <code>"withGlobalTauri": true</code>、capability に <code>wdio:default</code> と <code>wdio-webdriver:default</code>、フロントエンドの入口に <code>import '@wdio/tauri-plugin'</code>（<code>npm install @wdio/tauri-plugin</code>）が要ります。<Ref n={13} /> 試したところ、<code>tauri-plugin-wdio-webdriver</code> だけを足し、残りが無い状態では、組み込みサーバーは起動しましたが、サービスが最初のコマンドの前に使う <code>window.__TAURI__.core.invoke</code> が無く、<code>Tauri core.invoke not available</code> の警告のあとテストが 10 秒（Mocha の既定のタイムアウト）で失敗しました。公式の説明では、<code>browser.tauri.execute()</code> による WebView 内のコードの実行、コマンド（IPC）のモック、Rust とフロントエンドのログ収集もこのサービスが提供します（本書では試していません）。<Ref n={6} />
           </p>
           <Callout kind="note" title="名前の食い違いについて">
             <p>
               Tauri 公式ページは macOS の方式を「サービスの組み込み WebDriver サーバー」と呼び、WebdriverIO の資料は provider 名 <code>embedded</code> と、組み込むクレート名 <code>tauri-plugin-wdio-webdriver</code> を挙げています。<Ref n={6} /> <Ref n={11} /> 同じものを指していますが、資料によって呼び方が異なるため両方を記します。
             </p>
-          </Callout>
-          <Callout kind="unverified">
             <p>
-              WebDriver による E2E テストは、Linux でも WebKitGTK と WebKitWebDriver が入っていれば実行できる構成ですが、本書では実行していません。macOS の embedded provider も未検証です。手順は Tauri 公式と WebdriverIO 公式の記述に基づいています。
+              provider 名も食い違います。WebdriverIO のサイトの表（2026-11-08 時点）は <code>official</code>、<code>@wdio/tauri-service</code> 1.5.1 に同梱の資料は <code>external</code> で、<code>official</code> は「非推奨の別名で、v2 で削除する」とあります。<Ref n={13} /> 1.5.1 で <code>'official'</code> を指定すると <code>driverProvider: 'official' is deprecated; use 'external' instead.</code> という警告が出たうえで、<code>tauri-driver</code> 経由で動きました。本書は新しい名前の <code>external</code> を使います。
+            </p>
+          </Callout>
+          <Callout kind="note" title="Linux で確かめたこと">
+            <p>
+              Ubuntu 24.04（WSL2）で、Xvfb の仮想ディスプレイ上に Tsumugi を起動して確かめました。使った版は、<code>tauri-driver</code> 2.1.0、WebdriverIO 9.32.0（<code>@wdio/cli</code> と同系列のパッケージ）、<code>@wdio/tauri-service</code> 1.5.1、Mocha、<code>webkit2gtk-driver</code>（Ubuntu 24.04）です。次の4通りで、後述の Tsumugi のテスト5本がすべて通りました。(1) 公式の例の <code>tauri-driver</code> 直接。(2) サービスの <code>external</code>。(3) サービスの <code>embedded</code>（<code>tauri-plugin-wdio-webdriver</code>）。(4) <code>driverProvider</code> 省略（embedded になる）。(1) は WebdriverIO 10.1.0 でも通りました。ただし (2) から (4) を通すには、上で述べたアプリ側の変更が必要でした。
+            </p>
+            <p>
+              手間取った点は4つあります。(a) 本文の最初の設定の骨子には <code>capabilities</code> が無く、<code>No `capabilities` property found</code> で起動できませんでした。<code>{"capabilities: [{ browserName: 'tauri' }]"}</code> を足すと通ります（<code>appBinaryPath</code> をサービス側に書けば <code>tauri:options</code> は不要でした）。(b) <code>cargo build</code> だけで作ったデバッグ版は、フロントエンドを埋め込まず <code>devUrl</code>（<code>localhost:1420</code>）を開くため、画面が <code>Could not connect to localhost: Connection refused</code> になります。<code>tauri build --debug --no-bundle</code> で作ると <code>tauri://localhost</code> で画面が出ました。(c) <code>external</code> では、サービスが一時ディレクトリ（<code>/tmp/tauri-worker-0-0</code>）をアプリのデータ置き場（<code>XDG_DATA_HOME</code>）にし、実行が終わっても消えません。前回のページが残るので、テストは毎回ちがうタイトルで作るようにしました。(d) 公式の例の <code>specs</code> は <code>./develop/tests/specs/</code> 以下を指したままで、spec の置き場所と合いません。手元に合わせて直す必要があります。
+            </p>
+            <p>
+              まだ確かめていないのは、macOS の embedded provider、CrabNebula、Windows（<code>msedgedriver</code> と自動管理）、<code>browser.tauri.execute()</code> と IPC のモック、ログ収集です。これらは公式と WebdriverIO の記述に基づきます。
             </p>
           </Callout>
           <h3>tauri-driver を直接使う例</h3>
           <p>
-            Windows か Linux で <code>tauri-driver</code> を直接使う場合の WebdriverIO 設定も、公式に例があります。<Ref n={12} /> 要点は3つです。<code>onPrepare</code> で <code>tauri build --debug --no-bundle</code> を実行してデバッグビルドを作ること、<code>beforeSession</code> で <code>~/.cargo/bin/tauri-driver</code> を子プロセスとして起動し <code>afterSession</code> で終了すること、capabilities の <code>tauri:options.application</code> にビルドしたバイナリのパス（例では <code>../src-tauri/target/debug/tauri-app</code>）を書くことです。テスト本体は <code>{"$('body > h1')"}</code> のような WebdriverIO の API で要素を取り、テキストや CSS を検証します。<Ref n={12} />
+            Windows か Linux で <code>tauri-driver</code> を直接使う場合の WebdriverIO 設定も、公式に例があります。<Ref n={12} /> 要点は3つです。<code>onPrepare</code> で <code>tauri build --debug --no-bundle</code> を実行してデバッグビルドを作ること、<code>beforeSession</code> で <code>~/.cargo/bin/tauri-driver</code> を子プロセスとして起動し <code>afterSession</code> で終了すること、capabilities の <code>tauri:options.application</code> にビルドしたバイナリのパス（例では <code>../src-tauri/target/debug/tauri-app</code>）を書くことです。テスト本体は <code>{"$('body > h1')"}</code> のような WebdriverIO の API で要素を取り、テキストや CSS を検証します。<Ref n={12} /> この設定は、バイナリのパスと <code>specs</code> を Tsumugi に合わせるだけで、Linux でそのまま動きました。アプリに手を入れる必要はありません。
+          </p>
+          <p>
+            Tsumugi に対して書いたテストは次のとおりです。セレクタは Tsumugi のソースのクラス名から取り、保存結果は Rust 側の状態を <code>window.__TAURI_INTERNALS__.invoke</code> で直接読んで確かめます。<code>@wdio/tauri-service</code> を使う設定でも、公式の例の設定でも、同じ内容のテストが通りました。
+          </p>
+          <Code
+            lang="ts"
+            title="e2e/tsumugi.e2e.ts（Tsumugi の E2E テスト。Linux で5本とも通った）"
+            code={`
+// 毎回ちがうタイトルで作る（前回の実行のデータが残っていても通る）
+const TITLE = '週次メモ ' + Date.now()
+
+// Rust 側の状態を IPC で直接読む（Tauri 2 は window.__TAURI_INTERNALS__.invoke を常に持つ）
+const findPage = () =>
+  browser.execute(async (title: string) => {
+    const inv = (window as any).__TAURI_INTERNALS__.invoke
+    const page = (await inv('list_pages')).find((p: any) => p.title === title)
+    return page ? await inv('get_page', { id: page.id }) : null
+  }, TITLE)
+
+describe('Tsumugi', () => {
+  before(async () => {
+    await $('.sidebar').waitForDisplayed({ timeout: 15000 })
+  })
+
+  it('新しいページを作ってタイトルを付ける', async () => {
+    await $('.new-page').click()
+    const title = await $('.page-title')
+    await title.waitForDisplayed()
+    await title.setValue(TITLE)
+    await browser.keys('Enter') // blur で名前が保存される
+    await browser.waitUntil(async () => (await findPage()) !== null)
+    await expect($('.tree-title=' + TITLE)).toBeDisplayed()
+  })
+
+  it('エディタに入力すると自動保存される', async () => {
+    const editor = await $('.bn-editor')
+    await editor.click()
+    await browser.keys('Tsumugi automatic save works')
+    // 自動保存のデバウンス（800ms）のあとで、保存された JSON を確かめる
+    await browser.waitUntil(async () => (await findPage())?.content.includes('automatic save works'))
+  })
+
+  it('検索ダイアログで本文を検索して開く', async () => {
+    await $('button[title^="検索"]').click()
+    await $('.search-input').setValue('automatic')
+    const hit = await $('.search-results').$('button*=' + TITLE) // テキストの部分一致
+    await hit.waitForDisplayed({ timeout: 5000 })
+    await hit.click()
+    await expect($('.page-title')).toHaveValue(TITLE)
+  })
+
+  it('Ctrl+K で検索ダイアログを開閉できる', async () => {
+    await browser.keys(['Control', 'k'])
+    await expect($('.search-dialog')).toBeDisplayed()
+    await browser.keys('Escape')
+    await expect($('.search-dialog')).not.toBeDisplayed()
+  })
+
+  it('簡易データベースに行を追加する', async () => {
+    const add = await $('.db-empty button')
+    await add.waitForClickable({ timeout: 5000 }) // ページの読み込み後に出る
+    await add.click()
+    const addRow = await $('.db-add-row')
+    await addRow.waitForClickable()
+    await addRow.click()
+    await addRow.click()
+    await browser.waitUntil(async () => (await $$('.db-table tbody tr')).length === 2)
+  })
+})
+`}
+          />
+          <p>
+            読み方のコツが3つあります。<code>click()</code> は要素が出るのを待たないので、読み込み後に出る要素（データベースの追加ボタン）は <code>waitForClickable()</code> で待ちます。<code>.tree-title=</code> や <code>button*=</code> は WebdriverIO のテキスト用セレクタ（完全一致と部分一致）で、<code>.a button*=x</code> のように CSS と一続きには書けず、<code>$('.a').$('button*=x')</code> と連鎖させます。WebdriverIO 10 は <code>executeAsync</code> を無くし、<code>async</code> 関数を <code>browser.execute</code> に渡す形に一本化したので、本文のコードもその形です（WebdriverIO 9.32.0 でも同じコードが通りました）。<Ref n={13} />
           </p>
           <p>
             CI では、各ターゲット OS でアプリをビルドできるランナーなら何でも使えます。公式は GitHub Actions 向けに <code>tauri-action</code> を勧めており、<Ref n={3} /> WebDriver を GitHub Actions で動かすガイドもあります。<Ref n={6} /> CI の構成は <ChapterLink n={53} /> で扱います。
@@ -679,6 +782,14 @@ export const config = {
       accessed: '2026-11-08',
       version: 'Tauri 2.12',
       note: 'tauri-driver を直接使う wdio.conf.js の構成（デバッグビルド、beforeSession での起動、tauri:options.application）と spec の例。',
+    },
+    {
+      title: '@wdio/tauri-service の資料（configuration、plugin-setup、platform-support）',
+      publisher: 'WebdriverIO（desktop-mobile リポジトリ）',
+      url: 'https://github.com/webdriverio/desktop-mobile/blob/main/packages/tauri-service/docs/configuration.md',
+      accessed: '2026-11-08',
+      version: '@wdio/tauri-service 1.5.1',
+      note: 'driverProvider の名前（embedded、external、official は非推奨の別名）と既定値、app 側に要るプラグインと設定、webdriverio ^9 の peer 依存。npm の同梱資料で確認。',
     },
   ],
 }

@@ -204,7 +204,7 @@ await invoke('my_custom_command')
             <InvokeSequenceFigure />
           </Figure>
           <p>
-            図 34-1 の Core の箱にある「capability を確認」は、<ChapterLink n={33} /> で見た「IPC は Core を経由し、Core が要求を捨てられる」の具体的な現れです。コマンドを呼べるかどうかは <ChapterLink n={37} /> の設定で決まります。
+            図 34-1 の Core の箱にある「capability を確認」は、<ChapterLink n={33} /> で見た「IPC は Core を経由し、Core が要求を捨てられる」の具体的な現れです。コマンドを呼べるかどうかは <ChapterLink n={37} /> の設定で決まります。ただし、アプリ自身が <code>generate_handler!</code> に登録したコマンドは、<code>build.rs</code> で <code>AppManifest</code> を設定しない限り、capability に書かれていないウィンドウからも呼べます。公式ドキュメントも、アプリに登録したコマンドは既定ですべてのウィンドウとウェブビューから使えると述べています（Tauri 2.12.5 の Linux でも実機で確認）。<Ref n={7} />capability の許可が必要になるのは、プラグインと Tauri 本体の API のコマンドです。
           </p>
           <h3>コマンドの名前と置き場所</h3>
           <p>
@@ -749,6 +749,14 @@ pub fn run() {
       accessed: '2026-11-08',
       version: 'Tauri 2.12',
       note: 'コマンドを IPC メッセージの上の「外部関数インターフェイスに似た抽象」と説明している箇所の根拠。',
+    },
+    {
+      title: 'Capabilities',
+      publisher: 'Tauri',
+      url: 'https://v2.tauri.app/security/capabilities/',
+      accessed: '2026-11-09',
+      version: 'Tauri 2.12',
+      note: 'アプリ自身が登録したコマンドは既定ですべてのウィンドウとウェブビューから使え、変えるには AppManifest::commands を使うという記述。',
     },
   ],
 }

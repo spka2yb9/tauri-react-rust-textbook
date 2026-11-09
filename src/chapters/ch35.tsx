@@ -279,10 +279,10 @@ fn save_page(app: AppHandle, page_id: String) -> Result<(), String> {
 use tauri::{AppHandle, Emitter, EventTarget};
 
 fn notify(app: &AppHandle) -> tauri::Result<()> {
-    // main ウィンドウだけに届く
+    // main 宛てとして発行する（target が main のリスナーが受け取る）
     app.emit_to("main", "focus-page", "p1")?;
 
-    // 条件に合うウィンドウにだけ届く
+    // 条件に合う target のリスナー宛てとして発行する
     app.emit_filter("open-file", "/path/to/file", |target| match target {
         EventTarget::WebviewWindow { label } => label == "main" || label == "file-viewer",
         _ => false,
@@ -292,9 +292,9 @@ fn notify(app: &AppHandle) -> tauri::Result<()> {
 `}
           />
           <p>
-            ここで1つ注意があります。<code>emit_to</code> で特定のウィンドウに送ったイベントは、普通の <code>listen</code> で登録したグローバルなリスナーには届きません。すべてのイベントを受けたいときは、Rust では <code>listen_any</code> を使います。<Ref n={4} /> JavaScript の <code>@tauri-apps/api/event</code> の <code>listen</code> はオプション <code>target</code> の既定値が <code>{'{ kind: \'Any\' }'}</code> なので、<code>emit_to</code> で送ったイベントも届きます。絞られるのは <code>getCurrentWebviewWindow().listen()</code> のようにウィンドウオブジェクト経由で登録した場合で、自分宛てのイベントだけを受けます。<Ref n={1} /><Ref n={3} />
+            ここで1つ注意があります。<code>emit_to</code> で特定のウィンドウに送ったイベントは、普通の <code>listen</code> で登録したグローバルなリスナーには届きません。すべてのイベントを受けたいときは、Rust では <code>listen_any</code> を使います。<Ref n={4} /> JavaScript の <code>@tauri-apps/api/event</code> の <code>listen</code> はオプション <code>target</code> の既定値が <code>{'{ kind: \'Any\' }'}</code> なので、<code>emit_to</code> で送ったイベントも届きます。絞られるのは <code>getCurrentWebviewWindow().listen()</code> のようにウィンドウオブジェクト経由で登録した場合で、自分宛てのイベントだけを受けます。<Ref n={1} /><Ref n={3} /> つまり <code>emit_to</code> と <code>emit_filter</code> が選り分けるのは、宛先（target）を指定して登録されたリスナーだけです。target が <code>Any</code> のリスナーは、宛先に関係なくすべてのイベントを受け取ります。Tauri 2.12.5 で確かめたところ、<code>emit_filter</code> で settings を除いても、settings ウィンドウで既定の <code>listen</code> を使ったリスナーにはイベントが届きました。
           </p>
-          <Figure n="35-2" title="emit と emit_to の届き方" caption="main と settings の2つのウィンドウが page-saved を listen している。emit したイベントは両方に届き、emit_to で main を指定した focus-page は main だけに届く。模式図。">
+          <Figure n="35-2" title="emit と emit_to の届き方" caption="main と settings の2つのウィンドウが page-saved を listen している。emit したイベントは両方に届き、emit_to で main を指定した focus-page は、ウィンドウ指定で登録したリスナーなら main のものだけに届く（既定の listen は target が Any なので settings にも届く）。模式図。">
             <EventSequenceFigure />
           </Figure>
           <p>
