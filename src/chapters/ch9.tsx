@@ -157,7 +157,7 @@ function Gallery({ sculptures }: { sculptures: Sculpture[] }) {
           </p>
           <h3>Hooks のルール</h3>
           <p>
-            <code>useState</code> のように <code>use</code> で始まる関数を <Term en="Hook">フック</Term> と呼びます。フックには1つ大きな制約があります。コンポーネントまたは他のフックの最上位でしか呼べず、条件分岐やループ、入れ子の関数の中では呼べません。<Ref n={1} /> React は state を名前ではなく呼び出し順で対応付けているため、レンダーごとに呼び出し順が変わると壊れるからです。<code>if</code> の中で呼んで、前回より呼び出し数が減るレンダーが起きると「Rendered fewer hooks than expected」のような実行時エラーになります。<Ref n={1} />
+            <code>useState</code> のように <code>use</code> で始まる関数を <Term en="Hook">フック</Term> と呼びます。フックには1つ大きな制約があります。コンポーネントまたは他のフックの最上位でしか呼べず、条件分岐やループ、入れ子の関数の中では呼べません。<Ref n={1} /> React は state を名前ではなく呼び出し順で対応付けているため、レンダーごとに呼び出し順が変わると、state の対応付けが正しくできなくなるからです。<code>if</code> の中で呼んで、前回より呼び出し数が減るレンダーが起きると「Rendered fewer hooks than expected」のような実行時エラーになります。<Ref n={1} />
           </p>
           <h3>state はコンポーネントのインスタンスごとに独立</h3>
           <p>

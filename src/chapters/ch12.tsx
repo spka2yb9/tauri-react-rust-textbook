@@ -452,7 +452,7 @@ function useData<T>(url: string | null): T | null {
             <li>Effect は「特定の操作ではなく、描画そのものが原因で起きる副作用」で、コミット後に実行される。外部システムとの同期に使う。</li>
             <li>依存配列は Effect の中で読むリアクティブな値（props、state、それらから計算した値）をすべて含める。<code>[]</code> はマウント時だけ、省略すると毎回。</li>
             <li>Effect は「同期の開始（setup）」と「停止（cleanup）」の組み合わせ。依存が変わると cleanup → setup の再同期が起き、アンマウントで cleanup が呼ばれる。</li>
-            <li>StrictMode は開発時に setup → cleanup → setup を1回余分に実行し、クリーンアップ漏れをあぶり出す。抑止せず、再マウントに耐える Effect に直す。</li>
+            <li>StrictMode は開発時に setup → cleanup → setup を1回余分に実行し、クリーンアップ漏れを見つける。抑止せず、再マウントしても正しく動く Effect に直す。</li>
             <li>依存を減らしたいときはコードを直す。オブジェクトや関数は Effect の中で作り、前の state は更新関数で読み、概念的にイベントである処理は <code>useEffectEvent</code> に出す。</li>
             <li>レンダー中に計算できる、操作が原因、親への通知、といった処理に Effect は不要。データ取得は <code>ignore</code> フラグで競合を防ぎ、カスタムフックに閉じ込める。</li>
           </ul>

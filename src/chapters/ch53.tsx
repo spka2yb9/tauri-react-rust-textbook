@@ -283,7 +283,7 @@ pub fn run() {
 `}
           />
           <p>
-            <code>#[cfg(desktop)]</code> で囲んでいるのは、updater プラグインがモバイルに対応しておらず、<code>Cargo.toml</code> の依存もデスクトップ向けにだけ宣言するためです。<Ref n={1} /> 第8部でモバイル版を作るとき、この囲いがそのまま効きます。
+            <code>#[cfg(desktop)]</code> で囲んでいるのは、updater プラグインがモバイルに対応しておらず、<code>Cargo.toml</code> の依存もデスクトップ向けにだけ宣言するためです。<Ref n={1} /> 第8部でモバイル版を作るときも、この指定によって updater のコードがビルド対象から外れます。
           </p>
           <p>
             設定は <code>tauri.conf.json</code> の2箇所です。

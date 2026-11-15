@@ -426,7 +426,7 @@ match dice_roll {
 `}
           />
           <p>
-            変数名を書けば残りの値すべてに一致して値も使えます。値が要らなければ <code>_</code> を書くと、未使用変数の警告も出ません。何もしない腕には、ユニット値 <code>()</code> を置きます。腕は上から順に照合されるので、これらの包括的な腕は最後に置きます。<Ref n={6} />
+            変数名を書けば残りの値すべてに一致して値も使えます。値が要らなければ <code>_</code> を書くと、未使用変数の警告も出ません。何もしない腕には、ユニット値 <code>()</code> を置きます。腕は上から順に照合されるので、残りの値すべてに一致する腕は最後に置きます。<Ref n={6} />
           </p>
         </>
       ),
@@ -574,7 +574,7 @@ fn first_even(nums: &[i32]) -> Option<i32> {
       publisher: 'The Rust Project',
       url: 'https://doc.rust-lang.org/book/ch06-02-match.html',
       accessed: '2026-11-08',
-      note: 'match の構文、パターンによる束縛、網羅性検査と E0004、包括的な腕と _、() の根拠。',
+      note: 'match の構文、パターンによる束縛、網羅性検査と E0004、残りの値すべてに一致する腕と _、() の根拠。',
     },
     {
       title: 'The Rust Programming Language, 6.3 Concise Control Flow with if let and let else',

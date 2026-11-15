@@ -391,7 +391,7 @@ function App() {
 `}
           />
           <p>
-            JSX のタグ1つが、<code>_jsx(型, props)</code> という関数呼び出し1つに対応します。小文字のタグは文字列 <code>'h1'</code> に、大文字のタグは関数そのもの（<code>Profile</code>）に変換されます。これが、コンポーネントの規則「名前は大文字で始める」の正体です。<Ref n={5} /> 実際の Vite の出力では、開発中は <code>react/jsx-dev-runtime</code> の <code>jsxDEV</code> が使われ、ファイル位置などの引数が加わります。 この <code>_jsx</code> を実行すると、前々節で見た React 要素オブジェクトが返ります。
+            JSX のタグ1つが、<code>_jsx(型, props)</code> という関数呼び出し1つに対応します。小文字のタグは文字列 <code>'h1'</code> に、大文字のタグは関数そのもの（<code>Profile</code>）に変換されます。これが、コンポーネントの規則「名前は大文字で始める」の理由です。<Ref n={5} /> 実際の Vite の出力では、開発中は <code>react/jsx-dev-runtime</code> の <code>jsxDEV</code> が使われ、ファイル位置などの引数が加わります。この <code>_jsx</code> を実行すると、前々節で見た React 要素オブジェクトが返ります。
           </p>
           <p>
             2020 年以前の React では、JSX は <code>React.createElement('h1', ...)</code> に変換されていました。そのため JSX を使うすべてのファイルに <code>import React from 'react'</code> が必要でした。React 17 で導入された新しい変換（自動ランタイム）では、コンパイラが <code>react/jsx-runtime</code> からの import を自動で挿入するため、JSX のためだけの <code>import React</code> は不要になりました。<Ref n={6} /> Vite の React プラグインは既定でこの自動ランタイムを使います。<Ref n={9} /> TypeScript 側でも <code>tsconfig</code> の <code>"jsx": "react-jsx"</code> がこの方式に対応します。

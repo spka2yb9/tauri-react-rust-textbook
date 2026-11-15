@@ -149,7 +149,7 @@ const chapter: Chapter = {
       body: (
         <>
           <p>
-            Tsumugi のデータは <ChapterLink n={42} /> で設計したとおり、手元の SQLite に <code>pages.content</code> として BlockNote の JSON を保存しています。これを「Mac と iPhone の両方で編集したい」となった瞬間、新しい問題が生まれます。両方がオフラインで同じページを編集した後、どちらの内容を残すのか、という問題です。
+            Tsumugi のデータは <ChapterLink n={42} /> で設計したとおり、手元の SQLite の <code>pages.content</code> に BlockNote の JSON として保存しています。「Mac と iPhone の両方で編集したい」という要件が加わると、新しい問題が生じます。両方がオフラインで同じページを編集した後、どちらの内容を残すのか、という問題です。
           </p>
           <p>
             解き方は大きく3つあります。図で並べてから、それぞれを説明します。
@@ -227,7 +227,7 @@ const onRender: ProfilerOnRenderCallback = (id, phase, actualDuration, baseDurat
 `}
           />
           <p>
-            公式リファレンスは、<code>actualDuration</code> が <code>baseDuration</code> より十分小さければメモ化（<ChapterLink n={14} />）が効いている、と読むよう案内しています。<Ref n={9} /> また Profiler は本番ビルドでは無効で、使うには profiling を有効にした特別なビルドが要ること、各 Profiler は CPU とメモリのコストを少し足すので必要なときだけ使うこと、も注意されています。<Ref n={9} />
+            公式リファレンスは、<code>actualDuration</code> が <code>baseDuration</code> より十分小さければメモ化（<ChapterLink n={14} />）の効果が出ていると読むよう案内しています。<Ref n={9} /> また、Profiler は本番ビルドでは無効で、使うには profiling を有効にした特別なビルドが要ること、各 Profiler は CPU とメモリを少し使うので必要なときだけ使うことについても注意を促しています。<Ref n={9} />
           </p>
           <h3>Rust 層：cargo flamegraph</h3>
           <p>

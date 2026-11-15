@@ -585,7 +585,7 @@ export function Toasts() {
 `}
           />
           <p>
-            設計の肝は、<code>toast()</code> が React のフックではなく普通の関数だということです。<code>markdownIO.ts</code> のような部品の外のコードからも、<code>ipc.searchPages(query).then(setHits).catch(toastError)</code> のような <code>catch</code> からも呼べます。仕組みは、モジュールの中に購読者の <code>Set</code> を持ち、<code>Toasts</code> 部品がマウント時に自分を登録し、アンマウント時に外す、というものです。<ChapterLink n={11} /> の Context や外部の状態管理ライブラリを使わずに、「どこからでも呼べて、表示は 1 か所」を実現しています。
+            この設計で重要なのは、<code>toast()</code> が React のフックではなく普通の関数だということです。<code>markdownIO.ts</code> のような部品の外のコードからも、<code>ipc.searchPages(query).then(setHits).catch(toastError)</code> のような <code>catch</code> からも呼べます。仕組みは、モジュールの中に購読者の <code>Set</code> を持ち、<code>Toasts</code> 部品がマウント時に自分を登録し、アンマウント時に外す、というものです。<ChapterLink n={11} /> の Context や外部の状態管理ライブラリを使わずに、「どこからでも呼べて、表示は 1 か所」を実現しています。
           </p>
           <p>
             <code>errorMessage</code> は、<code>catch</code> で受け取った <code>unknown</code> を文字列にします。Tauri のコマンドのエラーは <code>Serialize</code> の実装どおり文字列で届くので 1 行目で済みますが、プラグインの API やフロントエンド自身の例外は <code>Error</code> オブジェクトのことがあるので、<code>instanceof</code> で分けています。<code>unknown</code> を安全に扱うこの書き方は、<ChapterLink n={6} /> の内容です。

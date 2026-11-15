@@ -206,7 +206,7 @@ const chapter: Chapter = {
               表ブロック（<code>table</code>）は、<code>content</code> が配列ではなくオブジェクトなので、インライン変換が空文字列を返し、空行になります。callout ブロックは、既知の型に当てはまらないので中のテキストだけが段落として出ます。
             </li>
             <li>
-              文字の装飾のうち、太字・斜体・コード・取り消し線は写しますが、文字色や背景色、下線は落ちます。
+              文字の装飾のうち、太字・斜体・コード・取り消し線は写しますが、文字色や背景色、下線は変換後に残りません。
             </li>
             <li>
               画像は <code>![caption](url)</code> になりますが、<ChapterLink n={45} /> で保存した画像の <code>url</code> は <code>attachments/…</code> というアプリ内の相対パスなので、書き出したファイルを他のアプリで開いても画像は表示されません。画像ファイル自体は書き出しません。
@@ -658,7 +658,7 @@ export async function importFiles(parentId: string | null): Promise<number> {
 `}
           />
           <p>
-            3 つの関数は同じ形をしています。ダイアログでパスを得て、<code>null</code>（キャンセル）なら黙って戻り、プラグインとコマンドを <code>await</code> でつなぎ、成功したらトースト、失敗したら <code>toastError</code> で知らせます（<ChapterLink n={50} />）。図 49-2 に、書き出しと読み込みのそれぞれの順序をまとめます。
+            3 つの関数は同じ形をしています。ダイアログでパスを得て、<code>null</code>（キャンセル）なら通知せずに戻り、プラグインとコマンドを <code>await</code> で順に実行し、成功したらトースト、失敗したら <code>toastError</code> で知らせます（<ChapterLink n={50} />）。図 49-2 に、書き出しと読み込みのそれぞれの順序をまとめます。
           </p>
           <Figure n="49-2" title="書き出しと読み込みで、誰が何を呼ぶか" caption="書き出しは dialog の save → コマンドで変換 → fs で書く、の順。読み込みは dialog の open → fs で読む → コマンドで変換とページ作成、の順。Rust のコマンドはファイルに触らず、文字列の変換だけを行う。模式図。">
             <IOFlowFigure />

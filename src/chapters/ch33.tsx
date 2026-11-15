@@ -524,7 +524,7 @@ npm run tauri info                     # 環境の診断（バージョンや We
               プロジェクト構造も、この章で見た二重構造の上に組みます。<code>src/lib/ipc.ts</code> に <code>invoke</code> の呼び出しを集め、<code>src-tauri/</code> は Tauri に依存しない <code>core</code> クレートと、コマンドの薄い層を持つ <code>tsumugi</code> クレートのワークスペース（<ChapterLink n={22} />）に分けます。設定ファイルでは <code>identifier</code> をアプリ固有の値に変え、データ保存先のフォルダ名を決めます。
             </p>
             <p>
-              WebView が OS ごとに違うことは、第6部の UI 作りに直接効きます。macOS の WebKit と Windows の Chromium の両方で崩れないよう、CSS は標準的な機能に絞り、モバイルのセーフエリアの扱い（<ChapterLink n={55} />）も WebKit を基準に確認します。
+              WebView が OS ごとに違うことは、第6部の UI 作りに直接影響します。macOS の WebKit と Windows の Chromium の両方で崩れないよう、CSS は標準的な機能に絞り、モバイルのセーフエリアの扱い（<ChapterLink n={55} />）も WebKit を基準に確認します。
             </p>
           </Callout>
         </>

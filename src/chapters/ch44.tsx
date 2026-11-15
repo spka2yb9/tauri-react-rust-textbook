@@ -357,7 +357,7 @@ export function Editor({ pageId, content, theme }: Props) {
               <code>dictionary: ja</code>：メニューやプレースホルダを日本語にします。公式の Localization は <code>@blocknote/core/locales</code> からロケールを読み込んで <code>dictionary</code> に渡す方法を示しています。<Ref n={7} />
             </li>
             <li>
-              <code>initialContent</code>：<code>pages.content</code> の文字列を <code>JSON.parse</code> した配列です。<code>parseContent</code> は壊れた JSON を <code>undefined</code>（空のエディタ）に逃がし、空配列も <code>undefined</code> にしています。完成版のコードは、空配列を <code>initialContent</code> に渡すと BlockNote が受け付けないと注釈しています。この点は公式ドキュメントの該当ページでは確認できなかったため、コードの注釈に従います。
+              <code>initialContent</code>：<code>pages.content</code> の文字列を <code>JSON.parse</code> した配列です。<code>parseContent</code> は JSON を解析できなければ <code>undefined</code>（空のエディタ）を返し、空配列も <code>undefined</code> にしています。完成版のコードは、空配列を <code>initialContent</code> に渡すと BlockNote が受け付けないと注釈しています。この点は公式ドキュメントの該当ページでは確認できなかったため、コードの注釈に従います。
             </li>
             <li>
               <code>uploadFile</code> と <code>resolveFileUrl</code>：画像の保存と表示で、<ChapterLink n={45} /> で扱います。

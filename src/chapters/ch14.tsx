@@ -202,7 +202,7 @@ export const Toolbar = memo(function Toolbar({ canUndo, onUndo }: ToolbarProps) 
 `}
           />
           <p>
-            props が「変わっていない」かどうかは、React が各 props を <code>Object.is</code> で比べて判断します。<Ref n={2} /> ここが落とし穴です。<code>Object.is(3, 3)</code> は true ですが、<code>Object.is({'{}'}, {'{}'})</code> は false です。親のレンダー中に作られたオブジェクト、配列、関数は、中身が同じでも毎回「別物」になります。つまり、次のように書くと <code>memo</code> は一度も効きません。
+            props が「変わっていない」かどうかは、React が各 props を <code>Object.is</code> で比べて判断します。<Ref n={2} /> ここで注意が必要です。<code>Object.is(3, 3)</code> は true ですが、<code>Object.is({'{}'}, {'{}'})</code> は false です。親のレンダー中に作られたオブジェクト、配列、関数は、中身が同じでも毎回「別物」になります。つまり、次のように書くと <code>memo</code> で再レンダーを省略することは一度もできません。
           </p>
           <Code
             lang="tsx"
@@ -253,7 +253,7 @@ function PageList({ pages, query }: { pages: Page[]; query: string }) {
 `}
           />
           <p>
-            <code>useMemo</code> には主な用途が2つあります。<Ref n={3} /> 1つは重い計算を飛ばすこと。もう1つは、<code>memo</code> で包んだ子に渡す配列やオブジェクトを安定させることです。<code>filterPages</code> は毎回新しい配列を返すので、<code>useMemo</code> なしでは <code>List</code> の <code>memo</code> が効きません。
+            <code>useMemo</code> には主な用途が2つあります。<Ref n={3} /> 1つは重い計算を飛ばすこと。もう1つは、<code>memo</code> で包んだ子に渡す配列やオブジェクトを安定させることです。<code>filterPages</code> は毎回新しい配列を返すので、<code>useMemo</code> なしでは <code>List</code> の <code>memo</code> で再レンダーを省略できません。
           </p>
           <p>
             依存配列に、コンポーネント本体で作ったオブジェクトを入れないよう注意します。公式ドキュメントは <code>const options = {'{ mode, text }'}</code> を依存にする例を挙げ、「こうしたオブジェクトに依存するとメモ化の意味がなくなる」と述べています。<Ref n={3} /> オブジェクトの生成を <code>useMemo</code> の中へ移し、依存は <code>[mode, text]</code> のようなプリミティブにします。
@@ -342,7 +342,7 @@ function Editor() {
             公式ドキュメントは、コンパイラの最適化が主に「更新時の性能（既存コンポーネントの再レンダー）」を対象にすると説明し、2つの効果を挙げています。<Ref n={5} /> 1つは連鎖的な再レンダーの抑止で、図 14-1 の <code>Toolbar</code> を <code>memo</code> で包んだのと同じ効果を自動で得られます。もう1つは重い計算のスキップで、レンダー中の関数呼び出しが <code>useMemo</code> と同等にキャッシュされます。ただし「コンポーネントとフックの中だけを対象にし、すべての関数をメモ化するわけではない」「メモ化は複数のコンポーネント間で共有されない」という制限があります。<Ref n={5} />
           </p>
           <p>
-            前節の <code>Editor</code> と <code>Toolbar</code> の例を思い出してください。<code>onUndo={'{'}() =&gt; ...{'}'}</code> と書くと <code>memo</code> は壊れました。公式ドキュメントは、コンパイラなら「アロー関数があってもなくても正しく最適化でき、<code>Item</code> は <code>props.onClick</code> が変わったときだけ再レンダーされる」と述べています。<Ref n={5} /> 手でメモ化したときに起きやすい取りこぼしも、コンパイラなら避けられます。
+            前節の <code>Editor</code> と <code>Toolbar</code> の例を思い出してください。<code>onUndo={'{'}() =&gt; ...{'}'}</code> と書くと <code>memo</code> で再レンダーを省略できませんでした。公式ドキュメントは、コンパイラなら「アロー関数があってもなくても正しく最適化でき、<code>Item</code> は <code>props.onClick</code> が変わったときだけ再レンダーされる」と述べています。<Ref n={5} /> 手でメモ化したときに起きやすい取りこぼしも、コンパイラなら避けられます。
           </p>
           <h3>Vite プロジェクトで有効にする</h3>
           <p>

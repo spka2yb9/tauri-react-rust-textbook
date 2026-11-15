@@ -89,7 +89,7 @@ function SerdeMappingFigure() {
       <path d="M222,140 L243,140" stroke="var(--fig-line)" strokeWidth="2" markerEnd="url(#arrow34b)" markerStart="url(#arrow34b)" />
       <path d="M405,140 L428,140" stroke="var(--fig-line)" strokeWidth="2" markerEnd="url(#arrow34b)" markerStart="url(#arrow34b)" />
       <text x="320" y="268" fontSize="12" fill="var(--fig-muted)" textAnchor="middle">#[serde(rename_all = "camelCase")] で parent_id → parentId。Option は null、Vec は配列になる</text>
-      <text x="320" y="288" fontSize="12" fill="var(--fig-muted)" textAnchor="middle">TypeScript の型は実行時には検査されない（第6章）。JSON と食い違えば静かに壊れる</text>
+      <text x="320" y="288" fontSize="12" fill="var(--fig-muted)" textAnchor="middle">TypeScript の型は実行時に検査されない（第6章）。JSON と食い違えば気づかずに不具合が起きる</text>
     </svg>
   )
 }

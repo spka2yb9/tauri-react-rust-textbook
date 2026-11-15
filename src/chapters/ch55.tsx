@@ -95,7 +95,7 @@ function LifecycleFigure() {
 
         <rect x="470" y="70" width="150" height="80" rx="10" fill="var(--fig-box)" stroke="var(--fig-line)" strokeDasharray="6 4" />
         <text x="545" y="100" textAnchor="middle" fontWeight="600">終了</text>
-        <text x="545" y="122" textAnchor="middle" fontSize="11" fill="var(--fig-muted)">OS が黙って止める</text>
+        <text x="545" y="122" textAnchor="middle" fontSize="11" fill="var(--fig-muted)">OS が通知せず終了</text>
 
         <path d="M190,95 L245,95" stroke="var(--fig-line)" strokeWidth="2" markerEnd="url(#arrow55c)" />
         <text x="218" y="60" textAnchor="middle" fontSize="11" fill="var(--fig-muted)">アプリ切替</text>
@@ -340,7 +340,7 @@ return (
     },
     {
       id: 'lifecycle',
-      title: 'ライフサイクル：アプリは黙って止められる',
+      title: 'モバイルアプリのライフサイクル',
       body: (
         <>
           <p>
